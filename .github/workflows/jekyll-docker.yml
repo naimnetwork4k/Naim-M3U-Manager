@@ -27,12 +27,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Initialize Capacitor & Add Android
+      - name: Install Dependencies & Setup Capacitor Android
         run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "Naim LiveTV HD" "com.naim.livetvhd" --web-dir www
+          npm install
           npx cap add android
+          npx cap sync android
 
       - name: Allow Cleartext HTTP Traffic (For M3U/IPTV Links)
         run: |

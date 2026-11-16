@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies & Initialize Capacitor
         run: |
           npm install
-          npx cap init "Naim-M3U-Manager" "com.naim.m3umanager" --web-dir=www
+          npx cap init "Naim M3U Manager" "com.naim.m3umanager" --web-dir=www
           npm install @capacitor/splash-screen
           npx cap add android
 

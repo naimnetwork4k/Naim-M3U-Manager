@@ -1,6 +1,6 @@
 {
   "appId": "com.naimnetwork.m3u",
-  "appName": "Naim M3U Manager ",
+  "appName": "Naim M3U Manager tool ",
   "webDir": "www",
   "plugins": {
     "SplashScreen": {

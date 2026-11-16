@@ -1,7 +1,7 @@
 {
-  "name": "Naim-M3U-Manager",
-  "version": "1.0.0",
-  "description": "Naim M3U Manager Android App",
+  "name": "Naim-M3U-Manager-Tools",
+  "version": "1.4.0",
+  "description": "Naim M3U Manager Tools Android App",
   "main": "index.js",
   "scripts": {
     "build": "echo 'Building web assets'"

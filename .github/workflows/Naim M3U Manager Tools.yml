@@ -37,6 +37,16 @@ jobs:
           fi
           npx cap sync android
 
+      - name: Generate Android App Icons
+        run: |
+          if [ -f "assets/icon.png" ]; then
+            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
+          elif [ -f "www/icon.png" ]; then
+            mkdir -p assets
+            cp "www/icon.png" "assets/icon.png"
+            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
+          fi
+
       - name: Build Debug APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug

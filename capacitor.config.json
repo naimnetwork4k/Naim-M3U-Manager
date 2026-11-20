@@ -1,18 +1,6 @@
 {
   "appId": "com.naim.m3umanagertools",
-  "appName": "Naim M3U Manager Tools ",
+  "appName": "Naim M3U Manager Tools",
   "webDir": "www",
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 2000,
-      "launchAutoHide": true,
-      "backgroundColor": "#fcebe6",
-      "androidSplashResourceName": "splash",
-      "androidScaleType": "CENTER_CROP",
-      "showSpinner": false,
-      "splashFullScreen": true,
-      "splashImmersive": true
-    }
-  }
+  "bundledWebRuntime": false
 }
-

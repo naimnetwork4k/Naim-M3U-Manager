@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -27,56 +27,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Ensure webDir exists for Capacitor
-        run: |
-          mkdir -p www
-          if [ ! -f "www/index.html" ]; then
-            if [ -f "index.html" ]; then
-              cp "index.html" "www/index.html"
-            else
-              FOUND_HTML=$(find . -maxdepth 3 -name "index.html" 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1 || true)
-              if [ -n "$FOUND_HTML" ]; then
-                cp "$FOUND_HTML" "www/index.html"
-              else
-                echo "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Naim M3U Manager Tools</title></head><body><h3>Naim M3U Manager Tools</h3></body></html>" > www/index.html
-              fi
-            fi
-          fi
-          npm run build || true
+      - name: Build web assets
+        run: npm run build
 
-      - name: Setup Android and sync
+      - name: Add Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
           npx cap sync android
-
-      - name: Copy custom icon to Android mipmap folders
-        run: |
-          ICON_SRC=""
-          for f in "icon.png" "logo.png" "assets/icon.png" "assets/logo.png" "www/icon.png" "www/logo.png"; do
-            if [ -f "$f" ]; then
-              ICON_SRC="$f"
-              break
-            fi
-          done
-
-          if [ -z "$ICON_SRC" ]; then
-            ICON_SRC=$(find . -maxdepth 4 -type f \( -iname "*icon*.png" -o -iname "*logo*.png" \) 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1 || true)
-          fi
-
-          if [ -n "$ICON_SRC" ] && [ -f "$ICON_SRC" ]; then
-            echo "Found icon: $ICON_SRC"
-            for d in android/app/src/main/res/mipmap-*; do
-              if [ -d "$d" ]; then
-                cp -f "$ICON_SRC" "$d/ic_launcher.png" || true
-                cp -f "$ICON_SRC" "$d/ic_launcher_round.png" || true
-                cp -f "$ICON_SRC" "$d/ic_launcher_foreground.png" || true
-              fi
-            done
-          else
-            echo "No icon or logo PNG found in repository."
-          fi
 
       - name: Build Debug APK
         working-directory: android

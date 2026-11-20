@@ -37,31 +37,32 @@ jobs:
           fi
           npx cap sync android || true
 
-      - name: Force copy custom icon to Android mipmap folders
+      - name: Apply custom icon safely without duplicate resources
         run: |
-          ICON_FILE=""
-          for candidate in "icon.png" "1000273307 (1).png" "logo.png"; do
-            FOUND=$(find . -maxdepth 4 -type f -name "$candidate" 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1 || true)
-            if [ -n "$FOUND" ] && [ -f "$FOUND" ]; then
-              ICON_FILE="$FOUND"
+          set +e
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/*.png 2>/dev/null || true
+
+          ICON_SRC=""
+          for f in "icon.png" "logo.png" "1000273307 (1).png" "assets/icon.png" "assets/logo.png" "www/icon.png" "www/logo.png"; do
+            if [ -f "$f" ]; then
+              ICON_SRC="$f"
               break
             fi
           done
 
-          echo "Selected Icon: $ICON_FILE"
-
-          if [ -n "$ICON_FILE" ] && [ -f "$ICON_FILE" ]; then
-            for dir in android/app/src/main/res/mipmap-*; do
+          if [ -n "$ICON_SRC" ] && [ -f "$ICON_SRC" ]; then
+            echo "Using icon: $ICON_SRC"
+            for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
               if [ -d "$dir" ]; then
-                cp -f "$ICON_FILE" "$dir/ic_launcher.png" || true
-                cp -f "$ICON_FILE" "$dir/ic_launcher_round.png" || true
-                cp -f "$ICON_FILE" "$dir/ic_launcher_foreground.png" || true
-                echo "Copied to: $dir"
+                cp -f "$ICON_SRC" "$dir/ic_launcher.png" 2>/dev/null || true
+                cp -f "$ICON_SRC" "$dir/ic_launcher_round.png" 2>/dev/null || true
+                cp -f "$ICON_SRC" "$dir/ic_launcher_foreground.png" 2>/dev/null || true
               fi
             done
           else
-            echo "WARNING: No icon file found!"
+            echo "No icon file found in standard paths"
           fi
+          exit 0
 
       - name: Build Debug APK
         working-directory: android

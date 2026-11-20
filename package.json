@@ -1,6 +1,6 @@
 {
   "name": "naim-m3u-manager-tools",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Naim M3U Manager Tools Android App",
   "scripts": {
     "build": "echo Building Naim M3U Manager Tools"

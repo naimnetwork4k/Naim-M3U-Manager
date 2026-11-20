@@ -39,12 +39,24 @@ jobs:
 
       - name: Generate Android App Icons
         run: |
+          ICON_SOURCE=""
           if [ -f "assets/icon.png" ]; then
-            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
+            ICON_SOURCE="assets/icon.png"
           elif [ -f "www/icon.png" ]; then
             mkdir -p assets
             cp "www/icon.png" "assets/icon.png"
-            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
+            ICON_SOURCE="assets/icon.png"
+          fi
+
+          if [ -n "$ICON_SOURCE" ]; then
+            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000' || true
+            for dir in android/app/src/main/res/mipmap-*; do
+              if [ -d "$dir" ]; then
+                cp "$ICON_SOURCE" "$dir/ic_launcher.png" 2>/dev/null || true
+                cp "$ICON_SOURCE" "$dir/ic_launcher_round.png" 2>/dev/null || true
+                cp "$ICON_SOURCE" "$dir/ic_launcher_foreground.png" 2>/dev/null || true
+              fi
+            done
           fi
 
       - name: Build Debug APK

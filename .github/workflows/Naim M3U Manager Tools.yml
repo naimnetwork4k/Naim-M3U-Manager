@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -40,15 +40,23 @@ jobs:
       - name: Generate Android App Icons
         run: |
           ICON_SOURCE=""
-          if [ -f "assets/icon.png" ]; then
-            ICON_SOURCE="assets/icon.png"
-          elif [ -f "www/icon.png" ]; then
-            mkdir -p assets
-            cp "www/icon.png" "assets/icon.png"
-            ICON_SOURCE="assets/icon.png"
+          for candidate in "assets/icon.png" "www/icon.png" "icon.png" "assets/logo.png" "www/logo.png" "logo.png"; do
+            if [ -f "$candidate" ]; then
+              ICON_SOURCE="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$ICON_SOURCE" ]; then
+            FOUND_LOGO=$(find . -maxdepth 3 -iname "*logo*.png" -o -iname "*icon*.png" 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1)
+            if [ -n "$FOUND_LOGO" ]; then
+              ICON_SOURCE="$FOUND_LOGO"
+            fi
           fi
 
           if [ -n "$ICON_SOURCE" ]; then
+            mkdir -p assets
+            cp "$ICON_SOURCE" "assets/icon.png" 2>/dev/null || true
             npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000' || true
             for dir in android/app/src/main/res/mipmap-*; do
               if [ -d "$dir" ]; then
@@ -64,7 +72,7 @@ jobs:
         run: chmod +x gradlew && ./gradlew assembleDebug
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: Naim-M3U-Manager-Tools-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk

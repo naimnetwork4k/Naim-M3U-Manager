@@ -1,8 +1,8 @@
-name: Build Naim M3U Playlist Manager APK
+name: Build Naim M3U Manager Tools APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Java JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -27,7 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Initialize Android if missing
+      - name: Build web assets
+        run: npm run build
+
+      - name: Add Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
@@ -35,13 +38,11 @@ jobs:
           npx cap sync android
 
       - name: Build Debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Naim-M3U-Playlist-Manager-APK
+          name: Naim-M3U-Manager-Tools-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk

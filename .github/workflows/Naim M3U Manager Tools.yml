@@ -30,29 +30,29 @@ jobs:
       - name: Build web assets
         run: npm run build || true
 
-      - name: Sync Android platform
+      - name: Add Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
           npx cap sync android || true
 
-      - name: Apply custom app icon
+      - name: Copy custom app icon to mipmap folders
         run: |
-          ICON_PATH=""
-          for candidate in "icon.png" "logo.png" "assets/icon.png" "assets/logo.png" "www/icon.png" "www/logo.png"; do
-            if [ -f "$candidate" ]; then
-              ICON_PATH="$candidate"
+          ICON_SRC=""
+          for p in "icon.png" "logo.png" "assets/icon.png" "assets/logo.png" "www/icon.png" "www/logo.png"; do
+            if [ -f "$p" ]; then
+              ICON_SRC="$p"
               break
             fi
           done
 
-          if [ -n "$ICON_PATH" ]; then
-            for mip in android/app/src/main/res/mipmap-*; do
-              if [ -d "$mip" ]; then
-                cp -f "$ICON_PATH" "$mip/ic_launcher.png" 2>/dev/null || true
-                cp -f "$ICON_PATH" "$mip/ic_launcher_round.png" 2>/dev/null || true
-                cp -f "$ICON_PATH" "$mip/ic_launcher_foreground.png" 2>/dev/null || true
+          if [ -n "$ICON_SRC" ]; then
+            for dir in android/app/src/main/res/mipmap-*; do
+              if [ -d "$dir" ]; then
+                cp -f "$ICON_SRC" "$dir/ic_launcher.png" 2>/dev/null || true
+                cp -f "$ICON_SRC" "$dir/ic_launcher_round.png" 2>/dev/null || true
+                cp -f "$ICON_SRC" "$dir/ic_launcher_foreground.png" 2>/dev/null || true
               fi
             done
           fi

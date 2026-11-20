@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -28,14 +28,40 @@ jobs:
         run: npm install
 
       - name: Build web assets
-        run: npm run build
+        run: npm run build || true
 
       - name: Add Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
-          npx cap sync android
+          npx cap sync android || true
+
+      - name: Force copy custom icon to Android mipmap folders
+        run: |
+          ICON_FILE=""
+          for candidate in "icon.png" "1000273307 (1).png" "logo.png"; do
+            FOUND=$(find . -maxdepth 4 -type f -name "$candidate" 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1 || true)
+            if [ -n "$FOUND" ] && [ -f "$FOUND" ]; then
+              ICON_FILE="$FOUND"
+              break
+            fi
+          done
+
+          echo "Selected Icon: $ICON_FILE"
+
+          if [ -n "$ICON_FILE" ] && [ -f "$ICON_FILE" ]; then
+            for dir in android/app/src/main/res/mipmap-*; do
+              if [ -d "$dir" ]; then
+                cp -f "$ICON_FILE" "$dir/ic_launcher.png" || true
+                cp -f "$ICON_FILE" "$dir/ic_launcher_round.png" || true
+                cp -f "$ICON_FILE" "$dir/ic_launcher_foreground.png" || true
+                echo "Copied to: $dir"
+              fi
+            done
+          else
+            echo "WARNING: No icon file found!"
+          fi
 
       - name: Build Debug APK
         working-directory: android

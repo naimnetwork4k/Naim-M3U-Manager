@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -30,38 +30,29 @@ jobs:
       - name: Build web assets
         run: npm run build || true
 
-      - name: Add Android platform if missing
+      - name: Sync Android platform
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
-          npx cap sync android
+          npx cap sync android || true
 
-      - name: Apply custom app icon safely
+      - name: Apply custom app icon
         run: |
-          ICON_FILE=""
-          for path in "assets/icon.png" "www/icon.png" "icon.png" "assets/logo.png" "www/logo.png" "logo.png"; do
-            if [ -f "$path" ]; then
-              ICON_FILE="$path"
+          ICON_PATH=""
+          for candidate in "icon.png" "logo.png" "assets/icon.png" "assets/logo.png" "www/icon.png" "www/logo.png"; do
+            if [ -f "$candidate" ]; then
+              ICON_PATH="$candidate"
               break
             fi
           done
 
-          if [ -z "$ICON_FILE" ]; then
-            ICON_FILE=$(find . -maxdepth 4 -type f \( -iname "*logo*.png" -o -iname "*icon*.png" \) 2>/dev/null | grep -v "./android" | grep -v "./node_modules" | head -n 1 || true)
-          fi
-
-          if [ -n "$ICON_FILE" ] && [ -f "$ICON_FILE" ]; then
-            mkdir -p assets
-            cp "$ICON_FILE" "assets/icon.png" 2>/dev/null || true
-            if npx --no-install capacitor-assets --version >/dev/null 2>&1; then
-              npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000' || true
-            fi
-            for mipdir in android/app/src/main/res/mipmap-*; do
-              if [ -d "$mipdir" ]; then
-                cp "$ICON_FILE" "$mipdir/ic_launcher.png" 2>/dev/null || true
-                cp "$ICON_FILE" "$mipdir/ic_launcher_round.png" 2>/dev/null || true
-                cp "$ICON_FILE" "$mipdir/ic_launcher_foreground.png" 2>/dev/null || true
+          if [ -n "$ICON_PATH" ]; then
+            for mip in android/app/src/main/res/mipmap-*; do
+              if [ -d "$mip" ]; then
+                cp -f "$ICON_PATH" "$mip/ic_launcher.png" 2>/dev/null || true
+                cp -f "$ICON_PATH" "$mip/ic_launcher_round.png" 2>/dev/null || true
+                cp -f "$ICON_PATH" "$mip/ic_launcher_foreground.png" 2>/dev/null || true
               fi
             done
           fi
